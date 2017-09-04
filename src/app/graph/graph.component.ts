@@ -16,6 +16,7 @@ export class GraphComponent implements OnInit {
 
 	this.gs.getGraphData().subscribe(data =>{
 		this.graphData = data;
+    console.log(this.graphData);
 	});
   }
 
