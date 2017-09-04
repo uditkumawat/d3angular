@@ -3,17 +3,7 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
-const pg = require('pg');
 
-const connectionString = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/d3angular';
-
-const client = new pg.Client(connectionString);
-try {
-  client.connect();
-}
-catch(err){
-  console.log("Error connecting Postgres db");
-}
 
 // Get our API routes
 const api = require('./server/routes/api');
