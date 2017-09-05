@@ -1,14 +1,14 @@
 
-.d3-chart {
-  width: 100%;
-  height: 400px;
+.bar {
+  fill: steelblue;
 }
 
-.d3-chart .axis path,
-.d3-chart .axis line {
-  stroke: #999;
+.bar:hover {
+  fill: brown;
 }
 
-.d3-chart .axis text {
-  fill: #999;
+.axis-title {
+  fill: none;
+  stroke: black;
+  stroke-width: 0.5px;
 }

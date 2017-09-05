@@ -1,32 +1,35 @@
-import { Component, OnInit,OnChanges,Input, ViewEncapsulation ,ElementRef,ViewChild } from '@angular/core';
-import * as d3 from 'd3';
+import { Component, OnInit } from '@angular/core';
+
+import * as d3 from 'd3-selection';
+import * as d3Scale from "d3-scale";
+import * as d3Array from "d3-array";
+import * as d3Axis from "d3-axis";
 
 import { GraphsService } from '../graphs.service';
 
+import { DATA } from './example';       //importing fake data
 
 @Component({
   selector: 'app-graph',
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.css'],
-  encapsulation: ViewEncapsulation.None
 })
 
-export class GraphComponent implements OnInit,OnChanges {
+export class GraphComponent implements OnInit {
 
-  @ViewChild('chart') private chartContainer: ElementRef;
-  @Input() private data: Array<any>;
+  title = "D3.js with Angular 4";
+  subtitle = "Bar Chart";
 
-  private margin: any = { top: 20, bottom: 20, left: 20, right: 20};
-  private chart: any;
   private width: number;
   private height: number;
-  private xScale: any;
-  private yScale: any;
-  private colors: any;
-  private xAxis: any;
-  private yAxis: any;
+  private margin = {top: 30, right: 20, bottom: 30, left: 50};
 
-  graphData:any=[];
+  private x: any;
+  private y: any;
+  private svg: any;
+  private g: any;
+
+  graphData:any=[];       //data we are getting from Nodejs API
 
 
   constructor(private gs:GraphsService) { }
@@ -34,96 +37,58 @@ export class GraphComponent implements OnInit,OnChanges {
 
   ngOnInit() {
 
-    this.createChart();
-
-    if(this.data){
-      this.updateChart();
-    }
+    this.initSvg();
+    this.initAxis();
+    this.drawAxis();
+    this.drawBars();
 
     this.gs.getGraphData().subscribe(data =>{
       this.graphData = data;
-      console.log(this.graphData);
     });
   }
 
-  ngOnChanges(){
+  private initSvg(){
 
-    if(this.chart){
-      this.updateChart();
-    }
+    this.svg = d3.select('svg');
+    this.width = +this.svg.attr("width") - this.margin.left - this.margin.right ;
+    this.height = +this.svg.attr("height") - this.margin.top - this.margin.bottom;
+    this.g = this.svg.append("g")
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
-  createChart() {
-    const element = this.chartContainer.nativeElement;
-    this.width = element.offsetWidth - this.margin.left - this.margin.right;
-    this.height = element.offsetHeight - this.margin.top - this.margin.bottom;
-    const svg = d3.select(element).append('svg')
-      .attr('width', element.offsetWidth)
-      .attr('height', element.offsetHeight);
-
-    // chart plot area
-    this.chart = svg.append('g')
-      .attr('class', 'bars')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
-
-    // define X & Y domains
-    const xDomain = this.data.map(d => d[0]);
-    const yDomain = [0, d3.max(this.data, d => d[1])];
-
-    // create scales
-    this.xScale = d3.scaleBand().padding(0.1).domain(xDomain).rangeRound([0, this.width]);
-    this.yScale = d3.scaleLinear().domain(yDomain).range([this.height, 0]);
-
-    // bar colors
-    this.colors = d3.scaleLinear().domain([0, this.data.length]).range(<any[]>['red', 'blue']);
-
-    // x & y axis
-    this.xAxis = svg.append('g')
-      .attr('class', 'axis axis-x')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + this.height})`)
-      .call(d3.axisBottom(this.xScale));
-    this.yAxis = svg.append('g')
-      .attr('class', 'axis axis-y')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`)
-      .call(d3.axisLeft(this.yScale));
+  private initAxis() {
+    this.x = d3Scale.scaleBand().rangeRound([0, this.width]).padding(0.2);
+    this.y = d3Scale.scaleLinear().rangeRound([this.height, 0]);
+    this.x.domain(DATA.map((d) => d.letter));
+    this.y.domain([0, d3Array.max(DATA, (d) => d.frequency)]);
   }
 
-  updateChart() {
-    // update scales & axis
-    this.xScale.domain(this.data.map(d => d[0]));
-    this.yScale.domain([0, d3.max(this.data, d => d[1])]);
-    this.colors.domain([0, this.data.length]);
-    this.xAxis.transition().call(d3.axisBottom(this.xScale));
-    this.yAxis.transition().call(d3.axisLeft(this.yScale));
+  private drawAxis() {
+    this.g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + this.height + ")")
+      .call(d3Axis.axisBottom(this.x));
+    this.g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3Axis.axisLeft(this.y).ticks(10, "%"))
+      .append("text")
+      .attr("class", "axis-title")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("text-anchor", "end")
+      .text("Frequency");
+  }
 
-    const update = this.chart.selectAll('.bar')
-      .data(this.data);
-
-    // remove exiting bars
-    update.exit().remove();
-
-    // update existing bars
-    this.chart.selectAll('.bar').transition()
-      .attr('x', d => this.xScale(d[0]))
-      .attr('y', d => this.yScale(d[1]))
-      .attr('width', d => this.xScale.bandwidth())
-      .attr('height', d => this.height - this.yScale(d[1]))
-      .style('fill', (d, i) => this.colors(i));
-
-    // add new bars
-    update
-      .enter()
-      .append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => this.xScale(d[0]))
-      .attr('y', d => this.yScale(0))
-      .attr('width', this.xScale.bandwidth())
-      .attr('height', 0)
-      .style('fill', (d, i) => this.colors(i))
-      .transition()
-      .delay((d, i) => i * 10)
-      .attr('y', d => this.yScale(d[1]))
-      .attr('height', d => this.height - this.yScale(d[1]));
+  private drawBars() {
+    this.g.selectAll(".bar")
+      .data(DATA)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", (d) => this.x(d.letter) )
+      .attr("y", (d) => this.y(d.frequency) )
+      .attr("width", this.x.bandwidth())
+      .attr("height", (d) => this.height - this.y(d.frequency) );
   }
 
 }
