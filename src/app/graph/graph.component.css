@@ -1,3 +1,10 @@
+h1,h2{
+  text-align:center;
+}
+
+svg{
+  align:center;
+}
 
 .bar {
   fill: steelblue;

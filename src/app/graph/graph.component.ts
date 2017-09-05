@@ -22,7 +22,7 @@ export class GraphComponent implements OnInit {
 
   private width: number;
   private height: number;
-  private margin = {top: 30, right: 20, bottom: 30, left: 50};
+  private margin = {top: 30, right: 20, bottom: 30, left:500};
 
   private x: any;
   private y: any;
