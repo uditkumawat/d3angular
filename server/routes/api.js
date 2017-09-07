@@ -35,4 +35,25 @@ router.get('/', (req, res) => {
 
 });
 
+router.get('/filter', (req, res) => {
+
+   const results = [];
+
+    const query = client.query("SELECT WEEK(date_of_product),sum(on_hand_value) FROM inventory GROUP BY WEEK(date_of_product) ORDER BY WEEK(date_of_product);");
+
+    query.then((data)=>{
+
+      data.rows.forEach((row)=>{
+      results.push(row);
+    });
+
+    return res.send(results);
+    }).catch((error)=>{
+      console.log("error",error);
+
+    return res.send([]);
+});
+
+});
+
 module.exports = router;

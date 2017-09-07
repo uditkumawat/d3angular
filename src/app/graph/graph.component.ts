@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ViewEncapsulation } from '@angular/core';
 
 import * as d3 from 'd3-selection';
 import * as d3Scale from "d3-scale";
@@ -12,7 +12,8 @@ import { DATA } from './example';       //importing fake data
 @Component({
   selector: 'app-graph',
   templateUrl: './graph.component.html',
-  styleUrls: ['./graph.component.css'],
+  styleUrls: ['graph.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 
 export class GraphComponent implements OnInit {
@@ -41,6 +42,7 @@ export class GraphComponent implements OnInit {
     this.initAxis();
     this.drawAxis();
     this.drawBars();
+
 
     this.gs.getGraphData().subscribe(data =>{
       this.graphData = data;
@@ -91,4 +93,15 @@ export class GraphComponent implements OnInit {
       .attr("height", (d) => this.height - this.y(d.frequency) );
   }
 
+  public change(filter:string){
+
+    this.initSvg();
+    this.initAxis();
+    this.drawAxis();
+    this.drawBars();
+
+    this.gs.getGraphDataByFilter(filter).subscribe(data =>{
+      this.graphData = data;
+    });
+  }
 }

@@ -3,7 +3,7 @@ export interface Frequency {
   frequency: number
 }
 
-export const DATA: Frequency[] = [
+export let DATA: Frequency[] = [
   {letter: "A", frequency: .08167},
   {letter: "B", frequency: .01492},
   {letter: "C", frequency: .02782},
@@ -31,3 +31,6 @@ export const DATA: Frequency[] = [
   {letter: "Y", frequency: .01974},
   {letter: "Z", frequency: .00074}
 ];
+
+
+

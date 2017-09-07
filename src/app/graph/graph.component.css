@@ -10,6 +10,11 @@ svg{
   align:center;
 }
 
+.filterType{
+  display:block;
+  margin:0 auto;
+}
+
 .bar {
   fill: steelblue;
 }
